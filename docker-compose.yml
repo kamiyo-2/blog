@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: web
+    command: sh -c "cd web && npm run dev"
+    tty: true
+    volumes:
+      - ./web:/web
+    ports:
+      - 3000:3000
+    environment:
+      - WATCHPACK_POLLING=true
+
+  api:
+    build:
+      context: api
+    command: python3 manage.py runserver 0.0.0.0:8000
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./api:/api
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - ./api/environments/db.env
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  db-data:
